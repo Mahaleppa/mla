@@ -1,0 +1,330 @@
+Assignment 7
+Market Basket Analysis
+library(arules)
+library(arulesViz)
+library(datasets)
+data(Groceries)
+str(Groceries)
+
+Formal class 'transactions' [package "arules"] with 3 slots
+  ..@ data       :Formal class 'ngCMatrix' [package "Matrix"] with 5 slots
+  .. .. ..@ i       : int [1:43367] 13 60 69 78 14 29 98 24 15 29 ...
+  .. .. ..@ p       : int [1:9836] 0 4 7 8 12 16 21 22 27 28 ...
+  .. .. ..@ Dim     : int [1:2] 169 9835
+  .. .. ..@ Dimnames:List of 2
+  .. .. .. ..$ : NULL
+  .. .. .. ..$ : NULL
+  .. .. ..@ factors : list()
+  ..@ itemInfo   :'data.frame':	169 obs. of  3 variables:
+  .. ..$ labels: chr [1:169] "frankfurter" "sausage" "liver loaf" "ham" ...
+  .. ..$ level2: Factor w/ 55 levels "baby food","bags",..: 44 44 44 44 44 44 44 42 42 41 ...
+  .. ..$ level1: Factor w/ 10 levels "canned food",..: 6 6 6 6 6 6 6 6 6 6 ...
+  ..@ itemsetInfo:'data.frame':	0 obs. of  0 variables
+
+inspect(Groceries[1:5])
+
+    items               
+[1] {citrus fruit,semi-finished bread,margarine,ready soups}             
+[2] {tropical fruit,yogurt,coffee}                                       
+[3] {whole milk}                                                         
+[4] {pip fruit,yogurt,cream cheese ,meat spreads}                        
+[5] {other vegetables,whole milk,condensed milk,long life bakery product}
+
+inspect(Groceries[9830:9835])
+    items                
+[1] {tropical fruit,     
+     other vegetables,   
+     domestic eggs,      
+     zwieback,           
+     ketchup,            
+     soda,               
+     dishes}             
+[2] {sausage,            
+     chicken,            
+     beef,               
+     hamburger meat,     
+     citrus fruit,       
+     grapes,             
+     root vegetables,    
+     whole milk,         
+     butter,             
+     whipped/sour cream, 
+     flour,              
+     coffee,             
+     red/blush wine,     
+     salty snack,        
+     chocolate,          
+     hygiene articles,   
+     napkins}            
+[3] {cooking chocolate}  
+[4] {chicken,            
+     citrus fruit,       
+     other vegetables,   
+     butter,             
+     yogurt,             
+     frozen dessert,     
+     domestic eggs,      
+     rolls/buns,         
+     rum,                
+     cling film/bags}    
+[5] {semi-finished bread,
+     bottled water,      
+     soda,               
+     bottled beer}       
+[6] {chicken,            
+     tropical fruit,     
+     other vegetables,   
+     vinegar,            
+     shopping bags}      
+> inspect(Groceries[9830:9835])
+    items                
+[1] {tropical fruit,     
+     other vegetables,   
+     domestic eggs,      
+     zwieback,           
+     ketchup,            
+     soda,               
+     dishes}             
+[2] {sausage,            
+     chicken,            
+     beef,               
+     hamburger meat,     
+     citrus fruit,       
+     grapes,             
+     root vegetables,    
+     whole milk,         
+     butter,             
+     whipped/sour cream, 
+     flour,              
+     coffee,             
+     red/blush wine,     
+     salty snack,        
+     chocolate,          
+     hygiene articles,   
+     napkins}            
+[3] {cooking chocolate}  
+[4] {chicken,            
+     citrus fruit,       
+     other vegetables,   
+     butter,             
+     yogurt,             
+     frozen dessert,     
+     domestic eggs,      
+     rolls/buns,         
+     rum,                
+     cling film/bags}    
+[5] {semi-finished bread,
+     bottled water,      
+     soda,               
+     bottled beer}       
+[6] {chicken,            
+     tropical fruit,     
+     other vegetables,   
+     vinegar,            
+     shopping bags}    
+
+itemFrequencyPlot(Groceries,topN=10,type="absolute")
+
+ 
+
+
+
+
+
+rules <- apriori(Groceries, parameter = list(supp = 0.001, conf = 0.8))
+
+Apriori
+
+Parameter specification:
+ confidence minval smax arem  aval originalSupport maxtime support minlen maxlen target   ext
+        0.8    0.1    1 none FALSE            TRUE       5   0.001      1     10  rules FALSE
+
+Algorithmic control:
+ filter tree heap memopt load sort verbose
+    0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+
+Absolute minimum support count: 9 
+
+set item appearances ...[0 item(s)] done [0.00s].
+set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
+sorting and recoding items ... [157 item(s)] done [0.00s].
+creating transaction tree ... done [0.00s].
+checking subsets of size 1 2 3 4 5 6 done [0.02s].
+writing ... [410 rule(s)] done [0.00s].
+creating S4 object  ... done [0.00s].
+
+ options(digits=2)
+ inspect(rules[1:5])
+    lhs                        rhs            support confidence lift count
+[1] {liquor,red/blush wine} => {bottled beer} 0.0019  0.90       11.2 19   
+[2] {curd,cereals}          => {whole milk}   0.0010  0.91        3.6 10   
+[3] {yogurt,cereals}        => {whole milk}   0.0017  0.81        3.2 17   
+[4] {butter,jam}            => {whole milk}   0.0010  0.83        3.3 10   
+[5] {soups,bottled beer}    => {whole milk}   0.0011  0.92        3.6 11  
+
+
+rules<-sort(rules, by="confidence", decreasing=TRUE)
+ inspect(rules[1:5])
+   
+ lhs                                           rhs          support confidence lift count
+[1] {rice,sugar}                               => {whole milk} 0.0012  1          3.9  12   
+[2] {canned fish,hygiene articles}             => {whole milk} 0.0011  1          3.9  11   
+[3] {root vegetables,butter,rice}              => {whole milk} 0.0010  1          3.9  10   
+[4] {root vegetables,whipped/sour cream,flour} => {whole milk} 0.0017  1          3.9  17   
+[5] {butter,soft cheese,domestic eggs}         => {whole milk} 0.0010  1          3.9  10 
+
+rules<-apriori(data=grocery, parameter=list(supp=0.001,conf = 0.15,minlen=2), 
++                appearance = list(default="rhs",lhs="whole milk"),
++                control = list(verbose=F))
+> rules<-sort(rules, decreasing=TRUE,by="confidence")
+> inspect(rules[1:5])
+    lhs             rhs                support confidence lift count
+[1] {whole milk} => {other vegetables} 0.075   0.29       1.5  736  
+[2] {whole milk} => {rolls/buns}       0.057   0.22       1.2  557  
+[3] {whole milk} => {yogurt}           0.056   0.22       1.6  551  
+[4] {whole milk} => {root vegetables}  0.049   0.19       1.8  481  
+[5] {whole milk} => {tropical fruit}   0.042   0.17       1.6  416  
+
+rules <- apriori(Groceries, parameter = list(supp = 0.001, conf = 0.8,maxlen=3))
+Apriori
+
+Parameter specification:
+ confidence minval smax arem  aval originalSupport maxtime support minlen maxlen target   ext
+        0.8    0.1    1 none FALSE            TRUE       5   0.001      1      3  rules FALSE
+
+Algorithmic control:
+ filter tree heap memopt load sort verbose
+    0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+
+Absolute minimum support count: 9 
+
+set item appearances ...[0 item(s)] done [0.00s].
+set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
+sorting and recoding items ... [157 item(s)] done [0.00s].
+creating transaction tree ... done [0.00s].
+checking subsets of size 1 2 3 done [0.01s].
+writing ... [29 rule(s)] done [0.00s].
+creating S4 object  ... done [0.00s].
+
+Apriori
+
+Parameter specification:
+ confidence minval smax arem  aval originalSupport maxtime support minlen maxlen target   ext
+        0.8    0.1    1 none FALSE            TRUE       5   0.001      1     10  rules FALSE
+
+Algorithmic control:
+ filter tree heap memopt load sort verbose
+    0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+
+Absolute minimum support count: 9 
+
+set item appearances ...[0 item(s)] done [0.00s].
+set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
+sorting and recoding items ... [157 item(s)] done [0.00s].
+creating transaction tree ... done [0.00s].
+checking subsets of size 1 2 3 4 5 6 done [0.02s].
+writing ... [410 rule(s)] done [0.00s].
+creating S4 object  ... done [0.00s].
+
+> rules <- apriori(Groceries, parameter = list(supp = 0.001, conf = 0.8))
+Apriori
+
+Parameter specification:
+ confidence minval smax arem  aval originalSupport maxtime support minlen maxlen target   ext
+        0.8    0.1    1 none FALSE            TRUE       5   0.001      1     10  rules FALSE
+
+Algorithmic control:
+ filter tree heap memopt load sort verbose
+    0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+
+Absolute minimum support count: 9 
+
+set item appearances ...[0 item(s)] done [0.00s].
+set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
+sorting and recoding items ... [157 item(s)] done [0.00s].
+creating transaction tree ... done [0.00s].
+checking subsets of size 1 2 3 4 5 6 done [0.02s].
+writing ... [410 rule(s)] done [0.00s].
+creating S4 object  ... done [0.00s].
+
+redundant <- is.redundant(rules)
+redundant
+  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+ [19] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+ [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE
+ [55] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+ [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+ [91] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[109] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[127] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[145] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[163] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[181] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[199] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[217] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[235] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[253] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE
+[271] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE  TRUE
+[289] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE
+[307] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[325] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[343] FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE
+[361] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[379] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+[397] FALSE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE FALSE FALSE FALSE FALSE FALSE
+
+
+rules.pruned <- rules[!redundant]
+rules<-rules.pruned
+rules
+set of 392 rules 
+
+inspect(rules[1:5])
+    lhs                        rhs            support confidence lift count
+[1] {liquor,red/blush wine} => {bottled beer} 0.0019  0.90       11.2 19   
+[2] {curd,cereals}          => {whole milk}   0.0010  0.91        3.6 10   
+[3] {yogurt,cereals}        => {whole milk}   0.0017  0.81        3.2 17   
+[4] {butter,jam}            => {whole milk}   0.0010  0.83        3.3 10   
+[5] {soups,bottled beer}    => {whole milk}   0.0011  0.92        3.6 11   
+
+summary(rules)
+set of 392 rules
+
+rule length distribution (lhs + rhs):sizes
+  3   4   5   6 
+ 29 227 130   6 
+
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    3.0     4.0     4.0     4.3     5.0     6.0 
+
+summary of quality measures:
+    support          confidence        lift          count     
+ Min.   :0.00102   Min.   :0.80   Min.   : 3.1   Min.   :10.0  
+ 1st Qu.:0.00102   1st Qu.:0.83   1st Qu.: 3.3   1st Qu.:10.0  
+ Median :0.00122   Median :0.85   Median : 3.6   Median :12.0  
+ Mean   :0.00125   Mean   :0.87   Mean   : 4.0   Mean   :12.3  
+ 3rd Qu.:0.00132   3rd Qu.:0.91   3rd Qu.: 4.4   3rd Qu.:13.0  
+ Max.   :0.00315   Max.   :1.00   Max.   :11.2   Max.   :31.0  
+
+mining info:
+      data ntransactions support confidence
+ Groceries          9835   0.001        0.8
+
+library(arulesViz)
+> rules<-apriori(data=Groceries, parameter=list(supp=0.001,conf = 0.15,minlen=2), 
++                appearance = list(default="rhs",lhs="whole milk"),
++                control = list(verbose=F))
+rules<-sort(rules, decreasing=TRUE,by="confidence")
+inspect(rules[1:5])
+    lhs             rhs                support confidence lift count
+[1] {whole milk} => {other vegetables} 0.075   0.29       1.5  736  
+[2] {whole milk} => {rolls/buns}       0.057   0.22       1.2  557  
+[3] {whole milk} => {yogurt}           0.056   0.22       1.6  551  
+[4] {whole milk} => {root vegetables}  0.049   0.19       1.8  481  
+[5] {whole milk} => {tropical fruit}   0.042   0.17       1.6  416 
+
+plot(rules,method="graph",interactive=TRUE ,shading=NA)
+
+ 
+
+
